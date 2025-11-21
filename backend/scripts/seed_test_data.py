@@ -8,7 +8,7 @@ from app.core.database import SessionLocal
 from app.models.user import User
 from app.models.venue import Venue
 from app.models.parking import ParkingLot
-from app.models.convenience import ConvenienceStore, ConvenienceCategory, InventoryItem
+from app.models.convenience import ConvenienceItem
 from app.core.security import get_password_hash
 import uuid
 
@@ -44,9 +44,11 @@ def seed_data():
                 "name": "MSG North Garage",
                 "venue_id": venue.id,
                 "capacity": 500,
+                "available_spaces": 500,
                 "location": {"latitude": 40.7505, "longitude": -73.9934},  # NYC
                 "pricing": {"hourlyRate": "5.00", "dailyMax": "40.00", "eventRate": "25.00"},
                 "is_public": True,
+                "is_active": True,
                 "address": {
                     "street": "350 W 31st St",
                     "city": "New York",
@@ -58,9 +60,11 @@ def seed_data():
                 "name": "Downtown LA Parking",
                 "venue_id": venue.id,
                 "capacity": 300,
+                "available_spaces": 300,
                 "location": {"latitude": 34.0522, "longitude": -118.2437},  # LA
                 "pricing": {"hourlyRate": "6.00", "dailyMax": "45.00", "eventRate": "30.00"},
                 "is_public": True,
+                "is_active": True,
                 "address": {
                     "street": "123 S Figueroa St",
                     "city": "Los Angeles",
@@ -72,9 +76,11 @@ def seed_data():
                 "name": "Chicago Loop Garage",
                 "venue_id": venue.id,
                 "capacity": 400,
+                "available_spaces": 400,
                 "location": {"latitude": 41.8781, "longitude": -87.6298},  # Chicago
                 "pricing": {"hourlyRate": "4.50", "dailyMax": "35.00", "eventRate": "20.00"},
                 "is_public": True,
+                "is_active": True,
                 "address": {
                     "street": "200 N Michigan Ave",
                     "city": "Chicago",
@@ -86,9 +92,11 @@ def seed_data():
                 "name": "SF Union Square Parking",
                 "venue_id": venue.id,
                 "capacity": 250,
+                "available_spaces": 250,
                 "location": {"latitude": 37.7875, "longitude": -122.4075},  # SF
                 "pricing": {"hourlyRate": "7.00", "dailyMax": "50.00", "eventRate": "35.00"},
                 "is_public": True,
+                "is_active": True,
                 "address": {
                     "street": "333 Post St",
                     "city": "San Francisco",
@@ -106,89 +114,58 @@ def seed_data():
             db.add(lot)
             print(f"✅ Created lot: {lot.name}")
 
-        # Create convenience store
-        store = ConvenienceStore(
-            id=str(uuid.uuid4()),
-            name="Main Concessions",
-            venue_id=venue.id,
-            location="Section 100",
-            is_active=True
-        )
-        db.add(store)
-        db.flush()
-        print(f"✅ Created store: {store.name}")
-
-        # Create categories
-        categories = [
-            {"name": "Beverages", "description": "Drinks and refreshments"},
-            {"name": "Snacks", "description": "Chips, candy, and snacks"},
-            {"name": "Food", "description": "Hot food and meals"}
-        ]
-
-        category_ids = {}
-        for cat_data in categories:
-            cat = ConvenienceCategory(
-                id=str(uuid.uuid4()),
-                store_id=store.id,
-                **cat_data
-            )
-            db.add(cat)
-            db.flush()
-            category_ids[cat.name] = cat.id
-            print(f"✅ Created category: {cat.name}")
-
-        # Create inventory items
+        # Create convenience items (simple approach without categories/stores)
         items = [
             {
                 "name": "Coca-Cola",
                 "description": "12 oz can",
-                "category": "Beverages",
+                "category": "beverage",
                 "sku": "COKE-12",
-                "basePrice": "3.50",
-                "stockQuantity": 100
+                "base_price": "3.50",
+                "markup_amount": "0.50",
+                "final_price": "4.00",
+                "source_store": "Walgreens"
             },
             {
                 "name": "Water",
                 "description": "16 oz bottle",
-                "category": "Beverages",
+                "category": "beverage",
                 "sku": "WATER-16",
-                "basePrice": "2.50",
-                "stockQuantity": 150
+                "base_price": "2.50",
+                "markup_amount": "0.50",
+                "final_price": "3.00",
+                "source_store": "Walgreens"
             },
             {
                 "name": "Chips",
                 "description": "Assorted flavors",
-                "category": "Snacks",
+                "category": "food",
                 "sku": "CHIPS-1",
-                "basePrice": "4.00",
-                "stockQuantity": 75
+                "base_price": "4.00",
+                "markup_amount": "0.50",
+                "final_price": "4.50",
+                "source_store": "Walgreens"
             },
             {
                 "name": "Hot Dog",
                 "description": "All beef with bun",
-                "category": "Food",
+                "category": "food",
                 "sku": "HOTDOG-1",
-                "basePrice": "6.00",
-                "stockQuantity": 50
+                "base_price": "6.00",
+                "markup_amount": "0.50",
+                "final_price": "6.50",
+                "source_store": "Walgreens"
             }
         ]
 
         for item_data in items:
-            category = item_data.pop("category")
-            item = InventoryItem(
+            item = ConvenienceItem(
                 id=str(uuid.uuid4()),
-                store_id=store.id,
-                category_id=category_ids[category],
+                venue_id=venue.id,
                 markup_percent=0,
-                markup_amount=0.50,
-                low_stock_threshold=20,
                 is_active=True,
                 **item_data
             )
-            # Calculate final price
-            base = float(item.basePrice)
-            markup = float(item.markup_amount)
-            item.finalPrice = str(base + markup)
             db.add(item)
             print(f"✅ Created item: {item.name}")
 
