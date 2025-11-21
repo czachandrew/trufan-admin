@@ -8,7 +8,6 @@ from app.core.database import SessionLocal
 from app.models.user import User
 from app.models.venue import Venue
 from app.models.parking import ParkingLot
-from app.models.convenience import ConvenienceItem
 from app.core.security import get_password_hash
 import uuid
 
@@ -96,67 +95,15 @@ def seed_data():
             db.add(lot)
             print(f"✅ Created lot: {lot.name}")
 
-        # Create convenience items (simple approach without categories/stores)
-        items = [
-            {
-                "name": "Coca-Cola",
-                "description": "12 oz can",
-                "category": "beverage",
-                "sku": "COKE-12",
-                "base_price": "3.50",
-                "markup_amount": "0.50",
-                "final_price": "4.00",
-                "source_store": "Walgreens"
-            },
-            {
-                "name": "Water",
-                "description": "16 oz bottle",
-                "category": "beverage",
-                "sku": "WATER-16",
-                "base_price": "2.50",
-                "markup_amount": "0.50",
-                "final_price": "3.00",
-                "source_store": "Walgreens"
-            },
-            {
-                "name": "Chips",
-                "description": "Assorted flavors",
-                "category": "food",
-                "sku": "CHIPS-1",
-                "base_price": "4.00",
-                "markup_amount": "0.50",
-                "final_price": "4.50",
-                "source_store": "Walgreens"
-            },
-            {
-                "name": "Hot Dog",
-                "description": "All beef with bun",
-                "category": "food",
-                "sku": "HOTDOG-1",
-                "base_price": "6.00",
-                "markup_amount": "0.50",
-                "final_price": "6.50",
-                "source_store": "Walgreens"
-            }
-        ]
-
-        for item_data in items:
-            item = ConvenienceItem(
-                id=str(uuid.uuid4()),
-                venue_id=venue.id,
-                markup_percent=0,
-                is_active=True,
-                **item_data
-            )
-            db.add(item)
-            print(f"✅ Created item: {item.name}")
+        # Skip convenience items for now - table doesn't exist yet
+        # Requires database migration to create convenience_items table
+        print("\n⏭️  Skipping convenience items (table not migrated yet)")
 
         db.commit()
         print("\n✅ Test data seeded successfully!")
         print(f"\nVenue ID: {venue.id}")
-        print(f"Store ID: {store.id}")
         print(f"Created {len(test_lots)} parking lots")
-        print(f"Created {len(items)} inventory items")
+        print(f"\n💡 Tip: Your mobile app can now fetch these parking lots!")
 
     except Exception as e:
         print(f"❌ Error seeding data: {e}")
