@@ -21,18 +21,20 @@ def seed_data():
         venue = Venue(
             id=str(uuid.uuid4()),
             name="Madison Square Garden",
-            address={
-                "street": "4 Pennsylvania Plaza",
-                "city": "New York",
-                "state": "NY",
-                "zipCode": "10001",
-                "country": "USA"
-            },
-            settings={
+            slug="madison-square-garden",
+            email="info@msg.com",
+            phone="212-465-6741",
+            address_line1="4 Pennsylvania Plaza",
+            city="New York",
+            state="NY",
+            zip_code="10001",
+            country="USA",
+            configuration={
                 "parkingEnabled": True,
                 "valetEnabled": True,
                 "convenienceStoreEnabled": True
-            }
+            },
+            is_active=True
         )
         db.add(venue)
         db.flush()
@@ -43,66 +45,46 @@ def seed_data():
             {
                 "name": "MSG North Garage",
                 "venue_id": venue.id,
-                "capacity": 500,
+                "total_spaces": 500,
                 "available_spaces": 500,
-                "location": {"latitude": 40.7505, "longitude": -73.9934},  # NYC
-                "pricing": {"hourlyRate": "5.00", "dailyMax": "40.00", "eventRate": "25.00"},
-                "is_public": True,
-                "is_active": True,
-                "address": {
-                    "street": "350 W 31st St",
-                    "city": "New York",
-                    "state": "NY",
-                    "zipCode": "10001"
-                }
+                "location_lat": 40.7505,
+                "location_lng": -73.9934,
+                "location_address": "350 W 31st St, New York, NY 10001",
+                "pricing_config": {"hourly_rate": 5.00, "max_daily": 40.00, "base_rate": 0.00},
+                "is_active": True
             },
             {
                 "name": "Downtown LA Parking",
                 "venue_id": venue.id,
-                "capacity": 300,
+                "total_spaces": 300,
                 "available_spaces": 300,
-                "location": {"latitude": 34.0522, "longitude": -118.2437},  # LA
-                "pricing": {"hourlyRate": "6.00", "dailyMax": "45.00", "eventRate": "30.00"},
-                "is_public": True,
-                "is_active": True,
-                "address": {
-                    "street": "123 S Figueroa St",
-                    "city": "Los Angeles",
-                    "state": "CA",
-                    "zipCode": "90012"
-                }
+                "location_lat": 34.0522,
+                "location_lng": -118.2437,
+                "location_address": "123 S Figueroa St, Los Angeles, CA 90012",
+                "pricing_config": {"hourly_rate": 6.00, "max_daily": 45.00, "base_rate": 0.00},
+                "is_active": True
             },
             {
                 "name": "Chicago Loop Garage",
                 "venue_id": venue.id,
-                "capacity": 400,
+                "total_spaces": 400,
                 "available_spaces": 400,
-                "location": {"latitude": 41.8781, "longitude": -87.6298},  # Chicago
-                "pricing": {"hourlyRate": "4.50", "dailyMax": "35.00", "eventRate": "20.00"},
-                "is_public": True,
-                "is_active": True,
-                "address": {
-                    "street": "200 N Michigan Ave",
-                    "city": "Chicago",
-                    "state": "IL",
-                    "zipCode": "60601"
-                }
+                "location_lat": 41.8781,
+                "location_lng": -87.6298,
+                "location_address": "200 N Michigan Ave, Chicago, IL 60601",
+                "pricing_config": {"hourly_rate": 4.50, "max_daily": 35.00, "base_rate": 0.00},
+                "is_active": True
             },
             {
                 "name": "SF Union Square Parking",
                 "venue_id": venue.id,
-                "capacity": 250,
+                "total_spaces": 250,
                 "available_spaces": 250,
-                "location": {"latitude": 37.7875, "longitude": -122.4075},  # SF
-                "pricing": {"hourlyRate": "7.00", "dailyMax": "50.00", "eventRate": "35.00"},
-                "is_public": True,
-                "is_active": True,
-                "address": {
-                    "street": "333 Post St",
-                    "city": "San Francisco",
-                    "state": "CA",
-                    "zipCode": "94108"
-                }
+                "location_lat": 37.7875,
+                "location_lng": -122.4075,
+                "location_address": "333 Post St, San Francisco, CA 94108",
+                "pricing_config": {"hourly_rate": 7.00, "max_daily": 50.00, "base_rate": 0.00},
+                "is_active": True
             }
         ]
 
