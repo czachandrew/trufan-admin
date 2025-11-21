@@ -7,9 +7,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from app.core.database import SessionLocal
 from app.models.user import User
 from app.models.venue import Venue
-from app.models.parking import ParkingLot
 from app.core.security import get_password_hash
+from sqlalchemy import text
+from datetime import datetime
 import uuid
+import json
 
 def seed_data():
     db = SessionLocal()
@@ -87,13 +89,37 @@ def seed_data():
             }
         ]
 
+        # Insert lots using raw SQL to avoid owner_id column issue
         for lot_data in test_lots:
-            lot = ParkingLot(
-                id=str(uuid.uuid4()),
-                **lot_data
-            )
-            db.add(lot)
-            print(f"✅ Created lot: {lot.name}")
+            lot_id = str(uuid.uuid4())
+            now = datetime.utcnow()
+
+            db.execute(text("""
+                INSERT INTO parking_lots (
+                    id, venue_id, name, description, total_spaces, available_spaces,
+                    location_lat, location_lng, pricing_config, is_active,
+                    created_at, updated_at, location_address
+                ) VALUES (
+                    :id, :venue_id, :name, :description, :total_spaces, :available_spaces,
+                    :location_lat, :location_lng, :pricing_config::jsonb, :is_active,
+                    :created_at, :updated_at, :location_address
+                )
+            """), {
+                "id": lot_id,
+                "venue_id": str(venue.id),
+                "name": lot_data["name"],
+                "description": lot_data.get("description"),
+                "total_spaces": lot_data["total_spaces"],
+                "available_spaces": lot_data["available_spaces"],
+                "location_lat": lot_data["location_lat"],
+                "location_lng": lot_data["location_lng"],
+                "pricing_config": json.dumps(lot_data["pricing_config"]),
+                "is_active": lot_data["is_active"],
+                "created_at": now,
+                "updated_at": now,
+                "location_address": lot_data["location_address"]
+            })
+            print(f"✅ Created lot: {lot_data['name']}")
 
         # Skip convenience items for now - table doesn't exist yet
         # Requires database migration to create convenience_items table
