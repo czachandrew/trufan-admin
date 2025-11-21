@@ -439,3 +439,97 @@ def simulate_payment(
     Once payment succeeds, the session status changes from 'pending_payment' to 'active'.
     """
     return ParkingService.simulate_payment(db, payment_data)
+
+
+@router.post("/testing/create-nearby-lot", response_model=ParkingLotPublic, status_code=status.HTTP_201_CREATED)
+def create_test_lot_nearby(
+    latitude: float = Query(..., description="User's current latitude"),
+    longitude: float = Query(..., description="User's current longitude"),
+    db: Session = Depends(get_db),
+):
+    """
+    Create a test parking lot near the provided coordinates.
+
+    TESTING ENDPOINT - For internal testing only.
+
+    This endpoint allows testers to create a parking lot within ~0.5 miles
+    of their current location for proximity testing.
+
+    The lot will be created with:
+    - Random offset from provided location (0.002-0.005 degrees, ~200-500m)
+    - Realistic pricing
+    - 100 total spaces
+    - Active status
+    """
+    import random
+    import uuid
+
+    # Create random offset (0.002-0.005 degrees = ~200-500 meters)
+    lat_offset = random.uniform(0.002, 0.005) * random.choice([-1, 1])
+    lng_offset = random.uniform(0.002, 0.005) * random.choice([-1, 1])
+
+    test_lot_lat = latitude + lat_offset
+    test_lot_lng = longitude + lng_offset
+
+    # Generate random test lot name
+    lot_number = random.randint(1, 999)
+    test_lot_name = f"Test Parking Lot #{lot_number}"
+
+    # Get or create a test venue
+    from app.models.venue import Venue
+    test_venue = db.query(Venue).filter(Venue.name == "Test Venue").first()
+
+    if not test_venue:
+        test_venue = Venue(
+            id=str(uuid.uuid4()),
+            name="Test Venue",
+            address={
+                "street": "123 Test Street",
+                "city": "Test City",
+                "state": "TS",
+                "zipCode": "00000",
+                "country": "USA"
+            },
+            settings={
+                "parkingEnabled": True,
+                "valetEnabled": True,
+                "convenienceStoreEnabled": True
+            }
+        )
+        db.add(test_venue)
+        db.flush()
+
+    # Create pricing configuration
+    pricing_config = {
+        "hourlyRate": f"{random.uniform(3.0, 8.0):.2f}",
+        "dailyMax": f"{random.uniform(25.0, 50.0):.2f}",
+        "eventRate": f"{random.uniform(15.0, 35.0):.2f}"
+    }
+
+    # Create the test parking lot
+    new_lot = ParkingLot(
+        id=str(uuid.uuid4()),
+        name=test_lot_name,
+        venue_id=test_venue.id,
+        capacity=100,
+        available_spaces=100,
+        location={
+            "latitude": test_lot_lat,
+            "longitude": test_lot_lng
+        },
+        pricing=pricing_config,
+        is_public=True,
+        is_active=True,
+        address={
+            "street": f"{random.randint(100, 999)} Test Ave",
+            "city": "Test City",
+            "state": "TS",
+            "zipCode": "00000"
+        }
+    )
+
+    db.add(new_lot)
+    db.commit()
+    db.refresh(new_lot)
+
+    return new_lot
